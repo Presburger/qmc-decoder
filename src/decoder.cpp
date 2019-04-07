@@ -76,6 +76,8 @@ void process(string dir)
     for(int u=0;u<3;++u)
         bak.pop_back();
     std::reverse(bak.begin(),bak.end());
+    if(bak=="0")
+        bak="mp3";
     outloc+=bak;
 
 
