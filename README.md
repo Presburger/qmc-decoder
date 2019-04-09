@@ -1,4 +1,4 @@
-#QQ音乐 qmc0 qmcflac QMC-DECODER
+#QQ音乐 qmc0 qmcflac QMC-DECODER#
 
 转化QQ Music QMC to MP3 or FLAC
 
