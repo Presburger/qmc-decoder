@@ -21,5 +21,5 @@ cd build
 * batch convert
 
 ```
-find test -type f -name "*.qmcflac" -print0 | xargs -0 ./decoder
+find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
 ```

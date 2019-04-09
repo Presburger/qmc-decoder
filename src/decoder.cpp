@@ -117,7 +117,7 @@ int main(int argc,char ** argv){
 
     if(argc<2)
     {
-        std::cout<<"./decoder qmcfile"<<std::endl;
+        std::cout<<"./decoder <qmcfile> ...."<<std::endl;
         return 1;
     }
 
