@@ -56,7 +56,11 @@ void process(string dir)
 {
     std::cout<<"decode "<<dir<<std::endl;
     std::fstream infile(dir.c_str(),std::ios::in|std::ios::binary);
-    assert(infile);
+    if(!infile.is_open())
+    {
+        cout<<"qmc file read error"<<endl;
+        return;
+    }
 
 
     string outloc(std::move(dir));
@@ -69,7 +73,7 @@ void process(string dir)
         outloc.pop_back();
     }
 
-    if(bak=="calf"||bak=="3p3")
+    if(bak!="0cmq"&&bak!="calfcmq")
         return;
 
     assert(bak.size()>3);
@@ -95,9 +99,16 @@ void process(string dir)
     }
 
     std::fstream outfile(outloc.c_str(),ios::out|ios::binary);
-    assert(outfile);
-    outfile.write(buffer,len);
-    outfile.close();
+
+    if(outfile.is_open())
+    {
+        outfile.write(buffer,len);
+        outfile.close();
+    }else
+    {
+        cout<<"open dump file error"<<endl;
+    }
+    delete[] buffer;
 
 
 }
