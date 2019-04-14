@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <assert.h>
+#include <algorithm>
 
 using namespace std;
 class Seed{
