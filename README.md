@@ -2,6 +2,10 @@
 
 转化QQ Music QMC to MP3 or FLAC
 
+* binary executable file for mac and linux is prepared in release
+
+[release](https://github.com/Presburger/qmc-decoder/releases)
+
 * build
 
 ```
