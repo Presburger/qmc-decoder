@@ -1,6 +1,8 @@
-# QQMusic qmc0 qmcflac Decoder
+# QQMusic QMC Decoder
 
-转化QQ Music QMC to MP3 or FLAC
+## convert QMC File to MP3 or FLAC
+
+**SUPPORT QMC3/QMC0/QMCFLAC**
 
 * binary executable file for windows, mac and linux is prepared in 
 [release](https://github.com/Presburger/qmc-decoder/releases)
