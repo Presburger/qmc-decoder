@@ -10,7 +10,7 @@
 
 * build
 
-```
+```sh
 mkdir build
 cd build
 cmake ..
@@ -19,14 +19,14 @@ make
 
 * convert
 
-```
+```sh
 cd build
 ./decoder <file1> <file2> ..... 
 ```
 
 * batch convert
 
-```
+```sh
 find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
 ```
 * todo
