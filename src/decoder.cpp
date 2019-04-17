@@ -75,14 +75,14 @@ void process(string dir)
         outloc.pop_back();
     }
 
-    if(bak!="0cmq"&&bak!="calfcmq")
+    if(bak!="0cmq"&&bak!="calfcmq"&&bak!="3cmq")
         return;
 
     assert(bak.size()>3);
     for(int u=0;u<3;++u)
         bak.pop_back();
     std::reverse(bak.begin(),bak.end());
-    if(bak=="0")
+    if(bak=="0"||bak=="3")
         bak="mp3";
     outloc+=bak;
 
