@@ -27,3 +27,7 @@ cd build
 ```
 find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
 ```
+* todo
+
+support auto fetch albums
+support auto fix music meta data
