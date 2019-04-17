@@ -20,13 +20,17 @@ make
 * convert
 
 ```sh
+#linux and mac user
 cd build
 ./decoder <file1> <file2> ..... 
+#windows user
+decoder.exe <file1> <file2> .....
 ```
 
 * batch convert
 
 ```sh
+#only for mac and linux user
 find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
 ```
 * todo
