@@ -31,5 +31,8 @@ find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
 ```
 * todo
 
+find a useful xargs script works in windows,to support batch convert in windows
+
 support auto fetch albums
+
 support auto fix music meta data
