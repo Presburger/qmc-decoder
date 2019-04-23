@@ -56,14 +56,22 @@ class Seed{
         vector<vector<uint8_t> > seedMap;
 };
 
+std::mutex mtx;
+
+void print_thread_s(const char *str, std::ostream &stm){
+    std::lock_guard<std::mutex> lock(mtx);
+    stm<<str<<endl;
+}
 
 void process(string dir)
 {
-    std::cout<<"decode "<<dir<<std::endl;
+    std::string print_str("decode: ");
+    print_str +=dir;
+    print_thread_s(print_str.c_str(),std::cout);
     std::fstream infile(dir.c_str(),std::ios::in|std::ios::binary);
     if(!infile.is_open())
     {
-        cout<<"qmc file read error"<<endl;
+        print_thread_s("qmc file read error",std::cerr);
         return;
     }
 
@@ -111,7 +119,7 @@ void process(string dir)
         outfile.close();
     }else
     {
-        cerr<<"open dump file error"<<endl;
+        print_thread_s("open dump file error",std::cerr);
     }
     delete[] buffer;
 
@@ -130,7 +138,7 @@ int main(int argc,char ** argv){
 
     if(argc<2)
     {
-        std::cout<<"./decoder <qmcfile> ...."<<std::endl;
+        print_thread_s("./decoder <qmcfile1> <qmcfile2> ...",std::cout);
         return 1;
     }
 
