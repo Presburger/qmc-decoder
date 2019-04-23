@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <assert.h>
+#include <mutex>
 #include <algorithm>
 
 #define THREAD_NUM 4
