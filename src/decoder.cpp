@@ -1,8 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <thread>
 #include <assert.h>
 #include <algorithm>
+
+#define THREAD_NUM 4
 
 using namespace std;
 class Seed{
@@ -108,12 +111,20 @@ void process(string dir)
         outfile.close();
     }else
     {
-        cout<<"open dump file error"<<endl;
+        cerr<<"open dump file error"<<endl;
     }
     delete[] buffer;
 
 
 }
+
+void thread_block(int argc,char ** argv,int id,int td_n){
+    for(int i=id;i<argc-1;i=i+td_n)
+    {
+        process(std::string(argv[i+1]));
+    }
+}
+
 
 int main(int argc,char ** argv){
 
@@ -123,8 +134,13 @@ int main(int argc,char ** argv){
         return 1;
     }
 
-    for(int i=1;i<argc;++i)
-        process(std::string(argv[i]));
+    std::vector<std::thread> td_group;
+    for(int i=1;i<THREAD_NUM;++i)
+        td_group.emplace_back(thread_block,argc,argv,i,THREAD_NUM);
+    thread_block(argc,argv,0,THREAD_NUM);
+    for(auto &&x: td_group)
+        x.join();
+
 
     return 0;
 }
