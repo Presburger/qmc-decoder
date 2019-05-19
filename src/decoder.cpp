@@ -1,14 +1,19 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#ifndef _WIN64
 #include <thread>
+#endif
 #include <assert.h>
+#ifndef _WIN64
 #include <mutex>
+#endif
 #include <algorithm>
 #include <boost/filesystem.hpp>
 
+#ifndef _WIN64
 #define THREAD_NUM 4
-
+#endif
 using namespace std;
 namespace fs=boost::filesystem;
 
@@ -59,23 +64,31 @@ class Seed{
         int index;
         vector<vector<uint8_t> > seedMap;
 };
-
+#ifndef _WIN64
 std::mutex mtx;
-
 void print_thread_s(const char *str, std::ostream &stm){
     std::lock_guard<std::mutex> lock(mtx);
     stm<<str<<endl;
 }
+#endif
 
 void process(string dir)
 {
     std::string print_str("decode: ");
     print_str +=dir;
+#ifdef _WIN64
+    std::cout<<print_str<<endl;
+#else 
     print_thread_s(print_str.c_str(),std::cout);
+#endif 
     std::fstream infile(dir.c_str(),std::ios::in|std::ios::binary);
     if(!infile.is_open())
     {
+#ifdef _WIN64
+        std::cerr<<"qmc file read error"<<endl;
+#else         
         print_thread_s("qmc file read error",std::cerr);
+#endif 
         return;
     }
 
@@ -123,26 +136,36 @@ void process(string dir)
         outfile.close();
     }else
     {
+#ifdef _WIN64 
+        std::cerr<<"open dump file error"<<endl;
+#else        
         print_thread_s("open dump file error",std::cerr);
+#endif
     }
     delete[] buffer;
 
 
 }
 
+#ifndef _WIN64
 void thread_block(const vector<string> * qmc_collection,int id){
     for(int i=id;i<qmc_collection->size();i+=THREAD_NUM)
     {
         process(qmc_collection->operator[](i));
     }
 }
+#endif
 
 
 int main(int argc,char ** argv){
 
     if(argc>1)
     {
-        print_thread_s("put decoder binary file in your cmq file directory, then run it.",std::cout);
+#ifndef _WIN64
+        print_thread_s("put decoder binary file in your qmc file directory, then run it.",std::cout);
+#else
+        cout<<"put decoder binary file in your qmc file directory, then run it.\n";
+#endif
         return 1;
     }
 
@@ -161,14 +184,18 @@ int main(int argc,char ** argv){
                 qmc_collection.emplace_back(fp.string());
         }
     };
+#ifdef _WIN64
+    for(auto &&qmc_file: qmc_collection)
+        process(qmc_file);
 
+#else
     vector<std::thread> td_group;
     for(int i=1;i<THREAD_NUM;++i)
         td_group.emplace_back(thread_block,&qmc_collection,i);
     thread_block(&qmc_collection,0);
     for(auto &&x: td_group)
         x.join();
-
+#endif 
 
     return 0;
 }
