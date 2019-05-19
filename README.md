@@ -10,7 +10,7 @@
 [release](https://github.com/Presburger/qmc-decoder/releases)
 
 
-* build
+* Build
 
 ```sh
 mkdir build
@@ -19,25 +19,15 @@ cmake ..
 make 
 ```
 
-* convert
+* Convert
 
-```sh
-#linux and mac user
-cd build
-./decoder <file1> <file2> ..... 
-#windows user
-decoder.exe <file1> <file2> .....
-```
+Put the execuatable file in your qmc file directory, Then run the execuatable file.
 
-* batch convert
+For mac user, Can click the decoder.command file, But you need copy the decoder.command file in your qmc file directory too.
 
-```sh
-#only for mac and linux user
-find <qmc file dir> -type f -name "*.qmc*" -print0 | xargs -0 ./decoder
-```
-* todo
+For windows user, Just click the decoder.exe when you put the decoder.exe into your qmc file directory, It will convert all qmc file automatically.
 
-find a useful xargs script works in windows,to support batch convert in windows
+* Todo
 
 support auto fetch albums
 
