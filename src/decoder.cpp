@@ -5,10 +5,13 @@
 #include <assert.h>
 #include <mutex>
 #include <algorithm>
+#include <boost/filesystem.hpp>
 
 #define THREAD_NUM 4
 
 using namespace std;
+namespace fs=boost::filesystem;
+
 class Seed{
     public:
         Seed():x(-1),y(8),dx(1),index(-1){
@@ -127,26 +130,42 @@ void process(string dir)
 
 }
 
-void thread_block(int argc,char ** argv,int id,int td_n){
-    for(int i=id;i<argc-1;i=i+td_n)
+void thread_block(const vector<string> * qmc_collection,int id){
+    for(int i=id;i<qmc_collection->size();i+=THREAD_NUM)
     {
-        process(std::string(argv[i+1]));
+        process(qmc_collection->operator[](i));
     }
 }
 
 
 int main(int argc,char ** argv){
 
-    if(argc<2)
+    if(argc>1)
     {
-        print_thread_s("./decoder <qmcfile1> <qmcfile2> ...",std::cout);
+        print_thread_s("put decoder binary file in your cmq file directory, then run it.",std::cout);
         return 1;
     }
 
-    std::vector<std::thread> td_group;
+    fs::path qmc_dir(".");
+
+    fs::recursive_directory_iterator  eod;
+
+    vector<string> qmc_collection;
+
+    for (fs::recursive_directory_iterator i(qmc_dir); i != eod; ++i){
+        fs::path fp = *i;
+        if (fs::is_regular_file(fp)){
+            if(fp.string().find(".qmc3")!=string::npos||
+                    fp.string().find(".qmc0")!=string::npos||
+                    fp.string().find(".qmcflac")!=string::npos)
+                qmc_collection.emplace_back(fp.string());
+        }
+    };
+
+    vector<std::thread> td_group;
     for(int i=1;i<THREAD_NUM;++i)
-        td_group.emplace_back(thread_block,argc,argv,i,THREAD_NUM);
-    thread_block(argc,argv,0,THREAD_NUM);
+        td_group.emplace_back(thread_block,&qmc_collection,i);
+    thread_block(&qmc_collection,0);
     for(auto &&x: td_group)
         x.join();
 
