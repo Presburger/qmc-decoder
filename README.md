@@ -25,7 +25,7 @@ Put the execuatable file in your qmc file directory, Then run the execuatable fi
 
 For windows user, Just click the decoder.exe when you put the decoder.exe into your qmc file directory, It will convert all qmc file automatically.
 
-**I need a user record a Tutorial video for windows users, if you can do it, please contact me(963759189@qq.com).**
+**I need a user record a tutorial video for windows users, if you can do it, please contact me(mayushengmusic@gmail.com).**
 
 For mac user, Can click the decoder.command file, But you need copy the decoder.command file in your qmc file directory too.
 
