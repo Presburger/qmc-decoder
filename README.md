@@ -5,22 +5,26 @@
 
 
 ***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
+
 * Build
--- for linux
+
+  * for linux
+
 ```shell
 mkdir build
 cd build
 cmake ..
 make 
 ```
--- for windows
+
+  * for windows
+
 ```bat
 mkdir build
 cd build
 cmake ..
 nmake
 ```
-
 
 * Convert
 
