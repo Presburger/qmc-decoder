@@ -5,19 +5,22 @@
 
 
 ***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
-
-* binary executable file for windows, mac and linux is prepared in 
-[release](https://github.com/Presburger/qmc-decoder/releases)
-
-
 * Build
-
-```sh
+-- for linux
+```shell
 mkdir build
 cd build
 cmake ..
 make 
 ```
+-- for windows
+```bat
+mkdir build
+cd build
+cmake ..
+nmake
+```
+
 
 * Convert
 
