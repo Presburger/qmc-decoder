@@ -22,7 +22,7 @@ make
 ```bat
 mkdir build
 cd build
-cmake ..
+cmake -G "NMake Makefiles" ..
 nmake
 ```
 
