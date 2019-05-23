@@ -6,9 +6,9 @@
 
 ***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
 
-* Build
+## Build
 
-  * for linux
+* for linux
 
 ```shell
 mkdir build
@@ -17,7 +17,7 @@ cmake ..
 make 
 ```
 
-  * for windows
+* for windows
 
 ```bat
 mkdir build
@@ -26,7 +26,7 @@ cmake ..
 nmake
 ```
 
-* Convert
+## Convert
 
 Put the execuatable file in your qmc file directory, Then run the execuatable file.
 
