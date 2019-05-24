@@ -6,20 +6,27 @@
 
 ***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
 
-* binary executable file for windows, mac and linux is prepared in 
-[release](https://github.com/Presburger/qmc-decoder/releases)
+## Build
 
+* for linux
 
-* Build
-
-```sh
+```shell
 mkdir build
 cd build
 cmake ..
 make 
 ```
 
-* Convert
+* for windows
+
+```bat
+mkdir build
+cd build
+cmake -G "NMake Makefiles" ..
+nmake
+```
+
+## Convert
 
 Put the execuatable file in your qmc file directory, Then run the execuatable file.
 
