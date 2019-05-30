@@ -6,6 +6,10 @@
 
 ***SUPPORT QMC3/QMC0/QMCFLAC, Faster***
 
+## Release
+
+binary executable file is released
+
 ## Build
 
 * for linux
