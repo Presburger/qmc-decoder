@@ -8,7 +8,7 @@
 
 ## Release
 
-binary executable file is released
+binary executable file is released [release](https://github.com/Presburger/qmc-decoder/releases)
 
 ## Build
 
