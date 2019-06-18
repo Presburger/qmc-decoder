@@ -12,19 +12,16 @@ using namespace std;
 namespace fs = filesystem;
 
 void
-print_thread_s(string str, ostream& stm);
-void
 process(string dir);
 
-mutex mtx;
 const regex qmc_regex{ "^.+\\.(qmc3|qmc0|qmcflac)$" };
 
 int
 main(int argc, char** argv)
 {
   if (argc > 1) {
-    print_thread_s(
-      "put decoder binary file in your qmc file directory, then run it.", cout);
+    cout << "put decoder binary file in your qmc file directory, then run it."
+         << endl;
     return 1;
   }
 
@@ -57,21 +54,12 @@ main(int argc, char** argv)
 }
 
 void
-print_thread_s(string str, ostream& stm)
-{
-  lock_guard<mutex> lock(mtx);
-  stm << str << endl;
-}
-
-void
 process(string dir)
 {
-  string print_str("decode: ");
-  print_str += dir;
-  print_thread_s(print_str, cout);
+  cout << "decode: " + dir << endl;
   fstream infile(dir, ios::in | ios::binary);
   if (!infile.is_open()) {
-    print_thread_s("qmc file read error", cerr);
+    cout << "qmc file read error" << endl;
     return;
   }
 
@@ -113,7 +101,7 @@ process(string dir)
     outfile.write(buffer, len);
     outfile.close();
   } else {
-    print_thread_s("open dump file error", cerr);
+    cout << "open dump file error" << endl;
   }
   delete[] buffer;
 }
