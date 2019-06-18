@@ -1,5 +1,4 @@
 #include "Seed.hpp"
-#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <fstream>
