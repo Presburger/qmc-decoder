@@ -12,8 +12,6 @@ using namespace std;
 namespace fs = filesystem;
 
 void
-thread_block(const vector<string> collection, int id, int count);
-void
 print_thread_s(string str, ostream& stm);
 void
 process(string dir);
@@ -44,7 +42,11 @@ main(int argc, char** argv)
   vector<thread> td_group;
 
   for (size_t i = 0; i < n_thread; ++i) {
-    td_group.emplace_back(thread_block, qmc_paths, i, n_thread);
+    td_group.emplace_back([&]() {
+      for (size_t j = i; j < qmc_paths.size(); j += n_thread) {
+        process(qmc_paths[j]);
+      }
+    });
   }
 
   for (auto&& td : td_group) {
@@ -52,14 +54,6 @@ main(int argc, char** argv)
   }
 
   return 0;
-}
-
-void
-thread_block(const vector<string> collection, int id, int count)
-{
-  for (size_t i = id; i < collection.size(); i += count) {
-    process(collection[i]);
-  }
 }
 
 void
