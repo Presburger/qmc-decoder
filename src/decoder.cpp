@@ -34,7 +34,7 @@ main(int argc, char** argv)
     }
   };
 
-  const auto n_thread = thread::hardware_concurrency();
+  const auto n_thread = thread::hardware_concurrency() - 1;
   vector<thread> td_group;
 
   for (size_t i = 0; i < n_thread; ++i) {
@@ -63,24 +63,9 @@ process(string dir)
   }
 
   string outloc(move(dir));
-
-  string bak;
-  char x;
-  while ((x = outloc.back()) != '.') {
-    bak.push_back(x);
-    outloc.pop_back();
-  }
-  static regex tmp_regex{ "(0cmq|calfcmq|3cmq)" };
-  if (!regex_match(bak, tmp_regex))
-    return;
-
-  assert(bak.size() > 3);
-  for (int u = 0; u < 3; ++u)
-    bak.pop_back();
-  reverse(bak.begin(), bak.end());
-  if (bak == "0" || bak == "3")
-    bak = "mp3";
-  outloc += bak;
+  const regex mp3_regex{ "qmc3|qmc0" }, flac_regex{ "qmcflac" };
+  outloc = regex_replace(outloc, mp3_regex, "mp3");
+  outloc = regex_replace(outloc, flac_regex, "flac");
 
   auto len = infile.seekg(0, ios::end).tellg();
   infile.seekg(0, ios::beg);
