@@ -14,8 +14,6 @@ namespace fs = filesystem;
 void
 process(string dir);
 
-const regex qmc_regex{ "^.+\\.(qmc3|qmc0|qmcflac)$" };
-
 int
 main(int argc, char** argv)
 {
@@ -26,6 +24,7 @@ main(int argc, char** argv)
   }
 
   vector<string> qmc_paths;
+  const regex qmc_regex{ "^.+\\.(qmc3|qmc0|qmcflac)$" };
 
   for (fs::recursive_directory_iterator i{ fs::current_path() }, end; i != end;
        ++i) {
