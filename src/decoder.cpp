@@ -18,8 +18,8 @@ int
 main(int argc, char** argv)
 {
   if (argc > 1) {
-    cout << "put decoder binary file in your qmc file directory, then run it."
-         << endl;
+    cout
+      << "put decoder binary file in your qmc file directory, then run it.\n";
     return 1;
   }
 
@@ -55,10 +55,10 @@ main(int argc, char** argv)
 void
 process(string dir)
 {
-  cout << "decode: " + dir << endl;
+  cout << "decode: " + dir + "\n";
   fstream infile(dir, ios::in | ios::binary);
   if (!infile.is_open()) {
-    cout << "qmc file read error" << endl;
+    cout << "qmc file read error\n";
     return;
   }
 
@@ -85,7 +85,7 @@ process(string dir)
     outfile.write(buffer, len);
     outfile.close();
   } else {
-    cout << "open dump file error" << endl;
+    cout << "open dump file error\n";
   }
   delete[] buffer;
 }
