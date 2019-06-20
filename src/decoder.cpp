@@ -63,9 +63,9 @@ process(string dir)
   }
 
   string outloc(move(dir));
-  const regex mp3_regex{ "qmc3|qmc0" }, flac_regex{ "qmcflac" };
-  outloc = regex_replace(outloc, mp3_regex, "mp3");
-  outloc = regex_replace(outloc, flac_regex, "flac");
+  const regex mp3_regex{ "\\.(qmc3|qmc0)" }, flac_regex{ "\\.qmcflac" };
+  outloc = regex_replace(outloc, mp3_regex, ".mp3");
+  outloc = regex_replace(outloc, flac_regex, ".flac");
 
   auto len = infile.seekg(0, ios::end).tellg();
   infile.seekg(0, ios::beg);
