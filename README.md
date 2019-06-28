@@ -18,7 +18,7 @@ binary executable file is released [release](https://github.com/Presburger/qmc-d
 mkdir build
 cd build
 cmake ..
-make 
+make
 ```
 
 * for windows
