@@ -1,6 +1,6 @@
-#include "Seed.hpp"
+#include "seed.hpp"
 #include <cassert>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -8,84 +8,122 @@
 #include <thread>
 #include <vector>
 
-using namespace std;
-namespace fs = filesystem;
+using std::fstream;
+using std::ios;
+using std::move;
+using std::regex;
+using std::regex_replace;
+using std::string;
+using std::thread;
+using std::vector;
+using std::cout;
+using std::mutex;
+using std::lock_guard;
+using std::mutex;
 
-void
-process(string dir);
+namespace fs = boost::filesystem;
 
-int
-main(int argc, char** argv)
+mutex mtx;
+
+inline void safe_out(const string &data)
 {
-  if (argc > 1) {
-    cout
-      << "put decoder binary file in your qmc file directory, then run it.\n";
-    return 1;
-  }
-
-  vector<string> qmc_paths;
-  const regex qmc_regex{ "^.+\\.(qmc3|qmc0|qmcflac)$" };
-
-  for (fs::recursive_directory_iterator i{ fs::current_path() }, end; i != end;
-       ++i) {
-    auto file_path = i->path().string();
-    if (i->is_regular_file() && regex_match(file_path, qmc_regex)) {
-      qmc_paths.emplace_back(file_path);
-    }
-  };
-
-  const auto n_thread = thread::hardware_concurrency() - 1;
-  vector<thread> td_group;
-
-  for (size_t i = 0; i < n_thread; ++i) {
-    td_group.emplace_back([&]() {
-      for (size_t j = i; j < qmc_paths.size(); j += n_thread) {
-        process(qmc_paths[j]);
-      }
-    });
-  }
-
-  for (auto&& td : td_group) {
-    td.join();
-  }
-
-  return 0;
+    lock_guard<std::mutex> lock(mtx);
+    cout << data << std::endl;
+}
+inline void safe_out(const char *data)
+{
+    lock_guard<std::mutex> lock(mtx);
+    cout << data << std::endl;
 }
 
-void
-process(string dir)
+void process(const string &dir)
 {
-  cout << "decode: " + dir + "\n";
-  fstream infile(dir, ios::in | ios::binary);
-  if (!infile.is_open()) {
-    cout << "qmc file read error\n";
-    return;
-  }
+    safe_out("decode: " + dir);
+    fstream infile(dir, ios::in | ios::binary);
+    if (!infile.is_open())
+    {
+        safe_out("qmc file read error");
+        return;
+    }
 
-  string outloc(move(dir));
-  const regex mp3_regex{ "\\.(qmc3|qmc0)" }, flac_regex{ "\\.qmcflac" };
-  outloc = regex_replace(outloc, mp3_regex, ".mp3");
-  outloc = regex_replace(outloc, flac_regex, ".flac");
+    string outloc(move(dir));
+    const regex mp3_regex{"\\.(qmc3|qmc0)$"}, flac_regex{"\\.qmcflac$"};
+    auto mp3_outloc = regex_replace(outloc, mp3_regex, ".mp3");
+    auto flac_outloc = regex_replace(outloc, flac_regex, ".flac");
 
-  auto len = infile.seekg(0, ios::end).tellg();
-  infile.seekg(0, ios::beg);
-  char* buffer = new char[len];
+    assert(mp3_outloc != flac_outloc);
+    outloc = (outloc != mp3_outloc ? mp3_outloc : flac_outloc);
 
-  infile.read(buffer, len);
-  infile.close();
+    auto len = infile.seekg(0, ios::end).tellg();
+    infile.seekg(0, ios::beg);
+    char *buffer = new char[len];
 
-  Seed seed;
-  for (int i = 0; i < len; ++i) {
-    buffer[i] = seed.NextMask() ^ buffer[i];
-  }
+    infile.read(buffer, len);
+    infile.close();
 
-  fstream outfile(outloc.c_str(), ios::out | ios::binary);
+    qmc_decoder::seed seed_;
+    for (int i = 0; i < len; ++i)
+    {
+        buffer[i] = seed_.NextMask() ^ buffer[i];
+    }
 
-  if (outfile.is_open()) {
-    outfile.write(buffer, len);
-    outfile.close();
-  } else {
-    cout << "open dump file error\n";
-  }
-  delete[] buffer;
+    fstream outfile(outloc.c_str(), ios::out | ios::binary);
+
+    if (outfile.is_open())
+    {
+        outfile.write(buffer, len);
+        outfile.close();
+    }
+    else
+    {
+        safe_out("open dump file error");
+    }
+    delete[] buffer;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc > 1)
+    {
+        std::cerr << "put decoder binary file in your qmc file directory, then run it." << std::endl;
+        return 1;
+    }
+
+    vector<string> qmc_paths;
+    const regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac)$"};
+
+    for (fs::recursive_directory_iterator i{fs::path(".")}, end; i != end; ++i)
+    {
+        auto file_path = i->path().string();
+        if (fs::is_regular_file(*i) && regex_match(file_path, qmc_regex))
+        {
+            qmc_paths.emplace_back(file_path);
+        }
+    };
+
+
+    const auto n_thread = thread::hardware_concurrency();
+    vector<thread> td_group;
+
+    for (size_t i = 0; i < n_thread - 1; ++i)
+    {
+        td_group.emplace_back([&qmc_paths, &n_thread](int index) {
+            for (size_t j = index; j < qmc_paths.size(); j += n_thread)
+            {
+                process(qmc_paths[j]);
+            }
+        },
+                              i);
+    }
+    for (size_t j = n_thread - 1; j < qmc_paths.size(); j += n_thread)
+    {
+        process(qmc_paths[j]);
+    }
+
+    for (auto &&td : td_group)
+    {
+        td.join();
+    }
+
+    return 0;
 }
