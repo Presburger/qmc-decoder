@@ -1,3 +1,0 @@
-[submodule "3rdparty/flac"]
-	path = 3rdparty/flac
-	url = https://github.com/xiph/flac.git
