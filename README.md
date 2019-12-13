@@ -23,7 +23,7 @@ make
 
 * for macOS
 ```shell
-brew install boost cmake
+brew install cmake
 mkdir build && cd build
 cmake ..
 make
