@@ -74,6 +74,9 @@ void sub_process(const string &dir) {
 }
 
 int main(int argc, char **argv) {
+  // Set locale encoding to properly handle files containing non-ASCii characters in the file name
+  setlocale(LC_ALL,".UTF-8");
+  std::locale::global(std::locale(".UTF-8"));
   if (argc > 1) {
     std::cerr
         << "put decoder binary file in your qmc file directory, then run it."
@@ -92,6 +95,7 @@ int main(int argc, char **argv) {
 
   for (fs::recursive_directory_iterator i{fs::path(".")}, end; i != end; ++i) {
     auto file_path = i->path().string();
+    // std::cout<<file_path<<endl;
     if ((fs::status(*i).permissions() & fs::perms::owner_read) !=
             fs::perms::none &&
         fs::is_regular_file(*i) && regex_match(file_path, qmc_regex)) {
