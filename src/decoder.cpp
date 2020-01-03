@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
   const auto n_thread = thread::hardware_concurrency();
   vector<thread> td_group;
 
-  for (size_t i = 0; i < n_thread - 1; ++i) {
+  for (size_t i = 0; i < n_thread; ++i) {
     td_group.emplace_back(
         [&qmc_paths, &n_thread](int index) {
           for (size_t j = index; j < qmc_paths.size(); j += n_thread) {
