@@ -1,10 +1,8 @@
+#include <boost/filesystem.hpp>
 #include <cassert>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <mutex>
 #include <regex>
-#include <thread>
 #include <vector>
 
 #include "seed.hpp"
@@ -13,31 +11,20 @@ using std::cout;
 using std::endl;
 using std::fstream;
 using std::ios;
-using std::lock_guard;
 using std::move;
-using std::mutex;
 using std::regex;
 using std::regex_replace;
 using std::string;
-using std::thread;
 using std::unique_ptr;
 using std::vector;
 
-namespace fs = std::filesystem;
-
-mutex mtx;
-
-template <typename T>
-void safe_out(const T &data) {
-  lock_guard<mutex> lock(mtx);
-  cout << data << endl;
-}
+namespace fs = boost::filesystem;
 
 void sub_process(const string &dir) {
-  safe_out("decode: " + dir);
+  std::cout << "decode: " + dir << std::endl;
   fstream infile(dir, ios::in | ios::binary);
   if (!infile.is_open()) {
-    safe_out("qmc file read error");
+    std::cerr << "qmc file read error" << std::endl;
     return;
   }
 
@@ -50,7 +37,7 @@ void sub_process(const string &dir) {
   infile.seekg(0, ios::beg);
   char *buffer = new (std::nothrow) char[len];
   if (buffer == nullptr) {
-    safe_out("create buffer error");
+    std::cerr << "create buffer error" << std::endl;
     return;
   }
   unique_ptr<char[]> auto_delete(buffer);
@@ -69,14 +56,14 @@ void sub_process(const string &dir) {
     outfile.write(buffer, len);
     outfile.close();
   } else {
-    safe_out("open dump file error");
+    std::cerr << "open dump file error" << std::endl;
   }
 }
 
 int main(int argc, char **argv) {
-  // Set locale encoding to properly handle files containing non-ASCii characters in the file name
-  setlocale(LC_ALL,".UTF-8");
-  std::locale::global(std::locale(".UTF-8"));
+  // Set locale encoding to properly handle files containing non-ASCii
+  // characters in the file name
+  std::locale::global(std::locale("en_US.UTF-8"));
   if (argc > 1) {
     std::cerr
         << "put decoder binary file in your qmc file directory, then run it."
@@ -85,7 +72,7 @@ int main(int argc, char **argv) {
   }
 
   if ((fs::status(fs::path(".")).permissions() & fs::perms::owner_write) ==
-      fs::perms::none) {
+      fs::perms::no_perms) {
     std::cerr << "please check if you have the write permissions on this dir."
               << std::endl;
     return -1;
@@ -97,28 +84,13 @@ int main(int argc, char **argv) {
     auto file_path = i->path().string();
     // std::cout<<file_path<<endl;
     if ((fs::status(*i).permissions() & fs::perms::owner_read) !=
-            fs::perms::none &&
+            fs::perms::no_perms &&
         fs::is_regular_file(*i) && regex_match(file_path, qmc_regex)) {
       qmc_paths.emplace_back(std::move(file_path));
     }
   };
 
-  const auto n_thread = thread::hardware_concurrency();
-  vector<thread> td_group;
-
-  for (size_t i = 0; i < n_thread; ++i) {
-    td_group.emplace_back(
-        [&qmc_paths, &n_thread](int index) {
-          for (size_t j = index; j < qmc_paths.size(); j += n_thread) {
-            sub_process(qmc_paths[j]);
-          }
-        },
-        i);
-  }
-
-  for (auto &&td : td_group) {
-    td.join();
-  }
+  for (auto &&elem : qmc_paths) sub_process(elem);
 
   return 0;
 }
