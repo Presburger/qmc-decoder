@@ -14,6 +14,12 @@ binary executable file is released [release](https://github.com/Presburger/qmc-d
 
 * for linux
 
+```
+* Note: additional components are required to provide build support:
+debian: sudo dnf install cmake libboost-all-dev
+fedora: sudo apt-get install cmake boost-devel libstdc++-static
+```
+
 ```shell
 mkdir build
 cd build
@@ -58,3 +64,4 @@ For mac user, double-click the decoder.command file, before you need to put the 
 support auto fetch albums
 
 support auto fix music meta data
+
