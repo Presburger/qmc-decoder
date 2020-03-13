@@ -3,7 +3,7 @@ project(qmc-decoder)
 
 set(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/usr")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -std=c++11 -static-libgcc -static-libstdc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -O2 -pipe -std=c++11 -static-libgcc -static-libstdc++")
 find_package(Boost 1.56 REQUIRED COMPONENTS
              filesystem)
 include_directories(${Boost_INCLUDE_DIRS})

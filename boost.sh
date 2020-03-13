@@ -13,7 +13,7 @@ tar -zxvf boost_1_72_0.tar.gz
 cd boost_1_72_0
 
 
-./bootstrap.sh --with-toolset=gcc --without-icu --with-libraries=filesystem \
+./bootstrap.sh --with-toolset=gcc --with-icu --with-libraries=filesystem \
 --prefix=$basedir/usr 
 
 ismingw="$1"

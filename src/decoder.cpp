@@ -7,10 +7,9 @@
 
 #include "seed.hpp"
 
+using std::cerr;
 using std::cout;
 using std::endl;
-using std::fstream;
-using std::ios;
 using std::move;
 using std::regex;
 using std::regex_replace;
@@ -22,48 +21,69 @@ namespace fs = boost::filesystem;
 
 void sub_process(const string &dir) {
   std::cout << "decode: " + dir << std::endl;
-  fstream infile(dir, ios::in | ios::binary);
-  if (!infile.is_open()) {
-    std::cerr << "qmc file read error" << std::endl;
+  string outloc(move(dir));
+  const regex mp3_regex{"\\.(qmc3|qmc0)$"};
+  const regex ogg_regex{"\\.qmcogg$"};
+  const regex flac_regex{"\\.qmcflac$"};
+  auto mp3_outloc = regex_replace(outloc, mp3_regex, ".mp3");
+  auto flac_outloc = regex_replace(outloc, flac_regex, ".flac");
+  auto ogg_outloc = regex_replace(outloc, ogg_regex, ".ogg");
+  if (mp3_outloc != outloc)
+    outloc = mp3_outloc;
+  else if (flac_outloc != outloc)
+    outloc = flac_outloc;
+  else
+    outloc = ogg_outloc;
+  FILE *infile = fopen(dir.c_str(), "rb");
+
+  if (infile == NULL) {
+    cerr << "failed read file: " << outloc << endl;
+    return;
+  }
+  unique_ptr<FILE, std::function<void(FILE *)>> autoclose_infile(
+      infile, [](FILE *f) { fclose(f); });
+
+  int res = fseek(infile, 0, SEEK_END);
+  if (res != 0) {
+    cerr << "seek file failed" << endl;
     return;
   }
 
-  string outloc(move(dir));
-  const regex mp3_regex{"\\.(qmc3|qmc0|qmcogg)$"}, flac_regex{"\\.qmcflac$"};
-  auto mp3_outloc = regex_replace(outloc, mp3_regex, ".mp3");
-  auto flac_outloc = regex_replace(outloc, flac_regex, ".flac");
-  outloc = (outloc != mp3_outloc ? mp3_outloc : flac_outloc);
-  auto len = infile.seekg(0, ios::end).tellg();
-  infile.seekg(0, ios::beg);
+  auto len = ftell(infile);
+  res = fseek(infile, 0, SEEK_SET);
+
   char *buffer = new (std::nothrow) char[len];
   if (buffer == nullptr) {
-    std::cerr << "create buffer error" << std::endl;
+    cerr << "create buffer error" << endl;
     return;
   }
   unique_ptr<char[]> auto_delete(buffer);
 
-  infile.read(buffer, len);
-  infile.close();
+  auto fres = fread(buffer, 1, len, infile);
+  if (fres != len) {
+    cerr << "read file error" << endl;
+  }
 
   qmc_decoder::seed seed_;
   for (int i = 0; i < len; ++i) {
     buffer[i] = seed_.next_mask() ^ buffer[i];
   }
 
-  fstream outfile(outloc.c_str(), ios::out | ios::binary);
+  FILE *outfile = fopen(outloc.c_str(), "wb+");
+  if (outfile == NULL) {
+    cerr << "failed write file: " << outloc << endl;
+    return;
+  }
 
-  if (outfile.is_open()) {
-    outfile.write(buffer, len);
-    outfile.close();
-  } else {
-    std::cerr << "open dump file error" << std::endl;
+  std::unique_ptr<FILE, std::function<void(FILE *)>> autoclose_outfile(
+      outfile, [](FILE *f) { fclose(f); });
+  fres = fwrite(buffer, 1, len, outfile);
+  if (fres != len) {
+    cerr << "write file error" << endl;
   }
 }
 
 int main(int argc, char **argv) {
-  // Set locale encoding to properly handle files containing non-ASCii
-  // characters in the file name
-  std::locale::global(std::locale("en_US.UTF-8"));
   if (argc > 1) {
     std::cerr
         << "put decoder binary file in your qmc file directory, then run it."
@@ -82,7 +102,7 @@ int main(int argc, char **argv) {
 
   for (fs::recursive_directory_iterator i{fs::path(".")}, end; i != end; ++i) {
     auto file_path = i->path().string();
-    // std::cout<<file_path<<endl;
+
     if ((fs::status(*i).permissions() & fs::perms::owner_read) !=
             fs::perms::no_perms &&
         fs::is_regular_file(*i) && regex_match(file_path, qmc_regex)) {
