@@ -1,6 +1,7 @@
 # QQMusic QMC Decoder (convert QMC File to MP3 or FLAC)
 PS：招募一名熟悉VC++编译的合作开发者，mingw-gcc在linux上交叉编译windows exe存在console设置问题，
 因此，希望有一个熟悉MSVC++的小伙伴协调合作，有意向请邮件联系mayushengmusic@gmail.com。
+
 [![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg?style=flat-square)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 [![LICENSE](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square)](https://github.com/Presburger/qmc-decoder/blob/master/LICENSE)
 
