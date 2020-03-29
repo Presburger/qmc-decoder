@@ -34,7 +34,17 @@ void sub_process(const string &dir) {
     outloc = flac_outloc;
   else
     outloc = ogg_outloc;
+#ifndef _WIN32
   FILE *infile = fopen(dir.c_str(), "rb");
+#else
+  std::wstring dir_w;
+  dir_w.resize(dir.size());
+  int newSize =
+      MultiByteToWideChar(CP_UTF8, 0, dir.c_str(), dir.length(),
+                          const_cast<wchar_t *>(dir_w.c_str()), dir_w.size());
+  filePathW.resize(newSize);
+  FILE *infile = _wfopen(dir_w.c_str(), L"rb");
+#endif
 
   if (infile == NULL) {
     cerr << "failed read file: " << outloc << endl;
@@ -69,7 +79,18 @@ void sub_process(const string &dir) {
     buffer[i] = seed_.next_mask() ^ buffer[i];
   }
 
-  FILE *outfile = fopen(outloc.c_str(), "wb+");
+#ifndef _WIN32
+  FILE *outfile = fopen(outloc.c_str(), "rb");
+#else
+  std::wstring outloc_w;
+  outloc_w.resize(outloc.size());
+  int newSize = MultiByteToWideChar(CP_UTF8, 0, outloc.c_str(), outloc.length(),
+                                    const_cast<wchar_t *>(outloc_w.c_str()),
+                                    outloc_w.size());
+  outloc_w.resize(newSize);
+  FILE *infile = _wfopen(outloc_w.c_str(), L"rb");
+#endif
+
   if (outfile == NULL) {
     cerr << "failed write file: " << outloc << endl;
     return;
