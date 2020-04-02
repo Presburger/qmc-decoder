@@ -80,7 +80,7 @@ void sub_process(const string &dir) {
   }
 
 #ifndef _WIN32
-  FILE *outfile = fopen(outloc.c_str(), "rb");
+  FILE *outfile = fopen(outloc.c_str(), "wb");
 #else
   std::wstring outloc_w;
   outloc_w.resize(outloc.size());
