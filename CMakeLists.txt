@@ -4,7 +4,7 @@ project(qmc-decoder)
 set(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/usr")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -std=c++11")
-if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Android")
+if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Android" AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
 endif()
 find_package(Boost 1.56 REQUIRED COMPONENTS

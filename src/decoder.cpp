@@ -1,77 +1,85 @@
+#include <algorithm>
 #include <boost/filesystem.hpp>
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <regex>
 #include <vector>
+#include <memory>
 
 #include "seed.hpp"
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::move;
-using std::regex;
-using std::regex_replace;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
 namespace fs = boost::filesystem;
 
-void sub_process(const string &dir) {
+namespace {
+  void close_file(std::FILE* fp) { std::fclose(fp);}
+  using smartFilePtr = std::unique_ptr<std::FILE, decltype(&close_file)>;
+
+  enum class openMode {
+    read,
+    write
+  };
+
+  smartFilePtr openFile(const std::string& aDir, openMode aOpenMode)  {
+    #ifndef _WIN32
+      std::FILE* fp = fopen(aDir.c_str(), aOpenMode == openMode::read ? "rb" : "wb");
+    #else
+      std::wstring dir_w;
+      dir_w.resize(aDir.size());
+      int newSize =
+          MultiByteToWideChar(CP_UTF8, 0, aDir.c_str(), aDir.length(),
+                              const_cast<wchar_t *>(dir_w.c_str()), dir_w.size());
+      filePathW.resize(newSize);
+      std::FILE* fp = _wfopen(dir_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
+    #endif
+      return smartFilePtr(fp, &close_file);
+  }
+}
+
+static const std::regex mp3_regex{"\\.(qmc3|qmc0)$"};
+static const std::regex ogg_regex{"\\.qmcogg$"};
+static  const std::regex flac_regex{"\\.qmcflac$"};
+
+void sub_process(std::string dir) {
   std::cout << "decode: " + dir << std::endl;
-  string outloc(move(dir));
-  const regex mp3_regex{"\\.(qmc3|qmc0)$"};
-  const regex ogg_regex{"\\.qmcogg$"};
-  const regex flac_regex{"\\.qmcflac$"};
+  std::string outloc(dir);
+
   auto mp3_outloc = regex_replace(outloc, mp3_regex, ".mp3");
   auto flac_outloc = regex_replace(outloc, flac_regex, ".flac");
   auto ogg_outloc = regex_replace(outloc, ogg_regex, ".ogg");
+
   if (mp3_outloc != outloc)
     outloc = mp3_outloc;
   else if (flac_outloc != outloc)
     outloc = flac_outloc;
   else
     outloc = ogg_outloc;
-#ifndef _WIN32
-  FILE *infile = fopen(dir.c_str(), "rb");
-#else
-  std::wstring dir_w;
-  dir_w.resize(dir.size());
-  int newSize =
-      MultiByteToWideChar(CP_UTF8, 0, dir.c_str(), dir.length(),
-                          const_cast<wchar_t *>(dir_w.c_str()), dir_w.size());
-  filePathW.resize(newSize);
-  FILE *infile = _wfopen(dir_w.c_str(), L"rb");
-#endif
 
-  if (infile == NULL) {
-    cerr << "failed read file: " << outloc << endl;
+  auto infile = openFile(dir, openMode::read);
+
+  if (infile == nullptr) {
+    std::cerr << "failed read file: " << outloc << std::endl;
     return;
   }
-  unique_ptr<FILE, std::function<void(FILE *)>> autoclose_infile(
-      infile, [](FILE *f) { fclose(f); });
 
-  int res = fseek(infile, 0, SEEK_END);
+  int res = fseek(infile.get(), 0, SEEK_END);
   if (res != 0) {
-    cerr << "seek file failed" << endl;
+    std::cerr << "seek file failed" << std::endl;
     return;
   }
 
-  auto len = ftell(infile);
-  res = fseek(infile, 0, SEEK_SET);
+  auto len = ftell(infile.get());
+  res = fseek(infile.get(), 0, SEEK_SET);
 
-  char *buffer = new (std::nothrow) char[len];
+  std::unique_ptr<char[]> buffer(new(std::nothrow) char[len]);
   if (buffer == nullptr) {
-    cerr << "create buffer error" << endl;
+    std::cerr << "create buffer error" << std::endl;
     return;
   }
-  unique_ptr<char[]> auto_delete(buffer);
 
-  auto fres = fread(buffer, 1, len, infile);
+  auto fres = fread(buffer.get(), 1, len, infile.get());
   if (fres != len) {
-    cerr << "read file error" << endl;
+    std::cerr << "read file error" << std::endl;
   }
 
   qmc_decoder::seed seed_;
@@ -79,30 +87,20 @@ void sub_process(const string &dir) {
     buffer[i] = seed_.next_mask() ^ buffer[i];
   }
 
-#ifndef _WIN32
-  FILE *outfile = fopen(outloc.c_str(), "wb");
-#else
-  std::wstring outloc_w;
-  outloc_w.resize(outloc.size());
-  int newSize = MultiByteToWideChar(CP_UTF8, 0, outloc.c_str(), outloc.length(),
-                                    const_cast<wchar_t *>(outloc_w.c_str()),
-                                    outloc_w.size());
-  outloc_w.resize(newSize);
-  FILE *infile = _wfopen(outloc_w.c_str(), L"rb");
-#endif
+  auto outfile = openFile(outloc, openMode::write);
 
-  if (outfile == NULL) {
-    cerr << "failed write file: " << outloc << endl;
+  if (outfile == nullptr) {
+    std::cerr << "failed write file: " << outloc << std::endl;
     return;
   }
 
-  std::unique_ptr<FILE, std::function<void(FILE *)>> autoclose_outfile(
-      outfile, [](FILE *f) { fclose(f); });
-  fres = fwrite(buffer, 1, len, outfile);
+  fres = fwrite(buffer.get(), 1, len, outfile.get());
   if (fres != len) {
-    cerr << "write file error" << endl;
+    std::cerr << "write file error" << std::endl;
   }
 }
+
+static const std::regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac|qmcogg)$"};
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -118,20 +116,19 @@ int main(int argc, char **argv) {
               << std::endl;
     return -1;
   }
-  vector<string> qmc_paths;
-  const regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac|qmcogg)$"};
+  std::vector<std::string> qmc_paths;
 
-  for (fs::recursive_directory_iterator i{fs::path(".")}, end; i != end; ++i) {
-    auto file_path = i->path().string();
+  for (auto & p : fs::recursive_directory_iterator(fs::path("."))) {
+    auto file_path = p.path().string();
 
-    if ((fs::status(*i).permissions() & fs::perms::owner_read) !=
+    if ((fs::status(p).permissions() & fs::perms::owner_read) !=
             fs::perms::no_perms &&
-        fs::is_regular_file(*i) && regex_match(file_path, qmc_regex)) {
+        fs::is_regular_file(p) && regex_match(file_path, qmc_regex)) {
       qmc_paths.emplace_back(std::move(file_path));
     }
   };
 
-  for (auto &&elem : qmc_paths) sub_process(elem);
+  std::for_each(qmc_paths.begin(), qmc_paths.end(), sub_process);
 
   return 0;
 }
