@@ -1,44 +1,46 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include <cassert>
-#include <fstream>
 #include <iostream>
+#include <memory>
 #include <regex>
 #include <vector>
-#include <memory>
 
 #include "seed.hpp"
 
 namespace fs = boost::filesystem;
 
 namespace {
-  void close_file(std::FILE* fp) { std::fclose(fp);}
-  using smartFilePtr = std::unique_ptr<std::FILE, decltype(&close_file)>;
+void close_file(std::FILE* fp) { std::fclose(fp); }
+using smartFilePtr = std::unique_ptr<std::FILE, decltype(&close_file)>;
 
-  enum class openMode {
-    read,
-    write
-  };
-
-  smartFilePtr openFile(const std::string& aDir, openMode aOpenMode)  {
-    #ifndef _WIN32
-      std::FILE* fp = fopen(aDir.c_str(), aOpenMode == openMode::read ? "rb" : "wb");
-    #else
-      std::wstring dir_w;
-      dir_w.resize(aDir.size());
-      int newSize =
-          MultiByteToWideChar(CP_UTF8, 0, aDir.c_str(), aDir.length(),
-                              const_cast<wchar_t *>(dir_w.c_str()), dir_w.size());
-      filePathW.resize(newSize);
-      std::FILE* fp = _wfopen(dir_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
-    #endif
-      return smartFilePtr(fp, &close_file);
-  }
+enum class openMode { read, write };
+/**
+ * @brief open a file
+ *
+ * @param aDir
+ * @param aOpenMode
+ * @return smartFilePtr
+ */
+smartFilePtr openFile(const std::string& aPath, openMode aOpenMode) {
+#ifndef _WIN32
+  std::FILE* fp =
+      fopen(aPath.c_str(), aOpenMode == openMode::read ? "rb" : "wb");
+#else
+  std::wstring aPath_w;
+  aPath_w.resize(aPath.size());
+  int newSize = MultiByteToWideChar(CP_UTF8, 0, aPath.c_str(), aPath.length(),
+                                    const_cast<wchar_t*>(aPath_w.c_str()),
+                                    aPath_w.size());
+  filePathW.resize(newSize);
+  std::FILE* fp =
+      _wfopen(aPath_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
+#endif
+  return smartFilePtr(fp, &close_file);
 }
 
 static const std::regex mp3_regex{"\\.(qmc3|qmc0)$"};
 static const std::regex ogg_regex{"\\.qmcogg$"};
-static  const std::regex flac_regex{"\\.qmcflac$"};
+static const std::regex flac_regex{"\\.qmcflac$"};
 
 void sub_process(std::string dir) {
   std::cout << "decode: " + dir << std::endl;
@@ -71,7 +73,7 @@ void sub_process(std::string dir) {
   auto len = ftell(infile.get());
   res = fseek(infile.get(), 0, SEEK_SET);
 
-  std::unique_ptr<char[]> buffer(new(std::nothrow) char[len]);
+  std::unique_ptr<char[]> buffer(new (std::nothrow) char[len]);
   if (buffer == nullptr) {
     std::cerr << "create buffer error" << std::endl;
     return;
@@ -101,8 +103,9 @@ void sub_process(std::string dir) {
 }
 
 static const std::regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac|qmcogg)$"};
+}  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc > 1) {
     std::cerr
         << "put decoder binary file in your qmc file directory, then run it."
@@ -118,7 +121,7 @@ int main(int argc, char **argv) {
   }
   std::vector<std::string> qmc_paths;
 
-  for (auto & p : fs::recursive_directory_iterator(fs::path("."))) {
+  for (auto& p : fs::recursive_directory_iterator(fs::path("."))) {
     auto file_path = p.path().string();
 
     if ((fs::status(p).permissions() & fs::perms::owner_read) !=
