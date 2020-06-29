@@ -15,6 +15,9 @@ binary executable file is released [release](https://github.com/Presburger/qmc-d
 * for linux
 
 ```shell
+git clone https://github.com/Presburger/qmc-decoder.git
+cd qmc-decoder
+git submodule update --init
 mkdir build
 cd build
 cmake ..
@@ -23,17 +26,23 @@ make
 
 * for macOS
 ```shell
+# install cmake 
 brew install cmake
+git clone https://github.com/Presburger/qmc-decoder.git
+cd qmc-decoder
+git submodule update --init
 mkdir build && cd build
 cmake ..
 make
 ```
 
-
-
 * for windows
 
 ```bat
+# PowerShell, please install MSVC compiler and Git 
+git clone https://github.com/Presburger/qmc-decoder.git
+cd qmc-decoder
+git submodule update --init
 mkdir build
 cd build
 cmake -G "NMake Makefiles" ..
@@ -44,11 +53,11 @@ nmake
 
 Put the execuatable file in your qmc file directory, then run the execuatable file.
 
-For mac user, double-click the decoder.command file, before you need to put the decoder.command and decoder files in the qmc music file directory.
+For mac user, double-click the decoder.command file, before you need to put the `decoder.command` and `decoder` files in the qmc music file directory.
 
 ![EjHn9U.gif](https://s2.ax1x.com/2019/05/19/EjHn9U.gif)
 
-For windows user, just click the `decoder.exe` when you put the `decoder.exe` into your qmc file directory, it will convert all qmc file automatically.
+For windows user, just click the `decoder-win.exe` when you put the `decoder-win.exe` into your qmc file directory, it will convert all qmc file automatically.
 
 ![tW1w7D.gif](https://s1.ax1x.com/2020/06/08/tW1w7D.gif)
 
