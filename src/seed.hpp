@@ -1,7 +1,17 @@
+/*
+ * Author: mayusheng - mayusheng@huawei.com
+ * Last modified: 2020-06-29 10:57
+ * Filename: seed.hpp
+ *
+ * Description:
+ *
+ *
+ */
 #ifndef SEED_H
 #define SEED_H
 
 #include <array>
+#include <cstdio>
 
 namespace qmc_decoder {
 class seed {

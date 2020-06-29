@@ -1,16 +1,21 @@
 cmake_minimum_required(VERSION 2.9)
 project(qmc-decoder)
 
-set(CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}/usr")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -std=c++11")
-if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Android" AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+
+if (MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+else(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -std=c++11")
 endif()
-find_package(Boost 1.56 REQUIRED COMPONENTS
-             filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
+
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -pthread -static-libgcc -static-libstdc++")
+endif()
+
+include_directories(3rdparty/filesystem/include)
 aux_source_directory(src SRC)
 add_executable(decoder ${SRC})
-target_link_libraries(decoder Boost::filesystem)
 

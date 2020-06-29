@@ -1,5 +1,13 @@
+/*
+ * Author: mayusheng - mayusheng@huawei.com
+ * Last modified: 2020-06-29 10:56
+ * Filename: decoder.cpp
+ *
+ * Description: qmc file auto decode
+ *
+ *
+ */
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <memory>
 #include <regex>
@@ -7,7 +15,17 @@
 
 #include "seed.hpp"
 
-namespace fs = boost::filesystem;
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
+#include <ghc/filesystem.hpp>
+namespace fs = ghc::filesystem;
+#endif
 
 namespace {
 void close_file(std::FILE* fp) { std::fclose(fp); }
@@ -31,9 +49,9 @@ smartFilePtr openFile(const std::string& aPath, openMode aOpenMode) {
   int newSize = MultiByteToWideChar(CP_UTF8, 0, aPath.c_str(), aPath.length(),
                                     const_cast<wchar_t*>(aPath_w.c_str()),
                                     aPath_w.size());
-  filePathW.resize(newSize);
-  std::FILE* fp =
-      _wfopen(aPath_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
+  aPath_w.resize(newSize);
+  std::FILE* fp = NULL;
+  _wfopen_s(&fp, aPath_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
 #endif
   return smartFilePtr(fp, &close_file);
 }
@@ -114,7 +132,7 @@ int main(int argc, char** argv) {
   }
 
   if ((fs::status(fs::path(".")).permissions() & fs::perms::owner_write) ==
-      fs::perms::no_perms) {
+      fs::perms::none) {
     std::cerr << "please check if you have the write permissions on this dir."
               << std::endl;
     return -1;
@@ -125,7 +143,7 @@ int main(int argc, char** argv) {
     auto file_path = p.path().string();
 
     if ((fs::status(p).permissions() & fs::perms::owner_read) !=
-            fs::perms::no_perms &&
+            fs::perms::none &&
         fs::is_regular_file(p) && regex_match(file_path, qmc_regex)) {
       qmc_paths.emplace_back(std::move(file_path));
     }
