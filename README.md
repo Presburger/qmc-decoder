@@ -45,7 +45,7 @@ cd qmc-decoder
 git submodule update --init
 mkdir build
 cd build
-cmake -G "NMake Makefiles" ..
+cmake -G "NMake Makefiles" .. -DCMAKE_BUILD_TYPE=Release
 nmake
 ```
 
