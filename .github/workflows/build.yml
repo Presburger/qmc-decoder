@@ -38,6 +38,9 @@ jobs:
   windows:
     name: Build on Windows
     runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: ["x86","x64"]
     
     steps:
     - uses: actions/checkout@v2
@@ -46,8 +49,9 @@ jobs:
         submodules: recursive
       
     - name: Preparation
-      run: |
-        mkdir build
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
         
     - name: Make
       working-directory: ./build
@@ -58,5 +62,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: windows
+        name: windows_${{ matrix.arch }}
         path: ./build/
