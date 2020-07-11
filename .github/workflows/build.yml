@@ -48,7 +48,7 @@ jobs:
       with: 
         submodules: recursive
       
-    - name: Prepare Environment
+    - name: Preparation
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
@@ -64,4 +64,30 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: windows_${{ matrix.arch }}
-        path: ./build/
+        path: ./build/decoder.exe
+
+  macos:
+    name: Build on MacOS
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      with: 
+        submodules: recursive
+
+    - name: Preparation
+      run: |
+        mkdir build
+
+    - name: Make
+      working-directory: ./build
+      run: |
+        cmake ..
+        make
+  
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos
+        path: ./build/*
