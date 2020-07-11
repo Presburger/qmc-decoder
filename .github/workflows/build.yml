@@ -1,0 +1,36 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      
+    - name: Preparation
+      run: |
+        sudo apt-get update -y
+        sudo apt-get upgrade -y
+        sudo apt=get install cmake -y
+        mkdir build
+        
+    - name: Make
+      run: |
+        cd build
+        cmake ..
+        make -j2
+        cd ..
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux
+        path: ./build/*
