@@ -48,14 +48,15 @@ jobs:
       with: 
         submodules: recursive
       
-    - name: Preparation
+    - name: Prepare Environment
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
-        
+
     - name: Make
-      working-directory: ./build
       run: |
+        mkdir build
+        cd build
         cmake -G "NMake Makefiles" .. -DCMAKE_BUILD_TYPE=Release
         nmake
     
