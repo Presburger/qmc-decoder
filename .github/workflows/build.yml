@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Build Binary
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  linux:
+    name: Build on Linux
     runs-on: ubuntu-latest
 
     steps:
@@ -24,15 +24,39 @@ jobs:
         mkdir build
         
     - name: Make
+      working-directory: ./build
       run: |
-        cd build
         cmake ..
         make -j2
-        cd ..
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
         name: linux
-        path: ./build/*
-
+        path: ./build/decoder
+  
+  windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      with: 
+        submodules: recursive
+      
+    - name: Preparation
+      run: |
+        mkdir build
+        
+    - name: Make
+      working-directory: ./build
+      run: |
+        cmake -G "NMake Makefiles" .. -DCMAKE_BUILD_TYPE=Release
+        nmake
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows
+        path: ./build/
