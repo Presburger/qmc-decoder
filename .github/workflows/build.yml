@@ -1,0 +1,93 @@
+name: Build Binary
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      with: 
+        submodules: recursive
+      
+    - name: Preparation
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install cmake -y
+        mkdir build
+        
+    - name: Make
+      working-directory: ./build
+      run: |
+        cmake ..
+        make
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux
+        path: ./build/decoder
+  
+  windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: ["x86","x64"]
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      with: 
+        submodules: recursive
+      
+    - name: Preparation
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+
+    - name: Make
+      run: |
+        mkdir build
+        cd build
+        cmake -G "NMake Makefiles" .. -DCMAKE_BUILD_TYPE=Release
+        nmake
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows_${{ matrix.arch }}
+        path: ./build/decoder.exe
+
+  macos:
+    name: Build on MacOS
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      name: Clone Repository
+      with: 
+        submodules: recursive
+
+    - name: Preparation
+      run: |
+        mkdir build
+
+    - name: Make
+      working-directory: ./build
+      run: |
+        cmake ..
+        make
+  
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos
+        path: ./build/decoder
