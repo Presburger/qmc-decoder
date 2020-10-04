@@ -46,9 +46,9 @@ smartFilePtr openFile(const std::string& aPath, openMode aOpenMode) {
 #else
   std::wstring aPath_w;
   aPath_w.resize(aPath.size());
-  int newSize = MultiByteToWideChar(CP_UTF8, 0, aPath.c_str(), aPath.length(),
+  int newSize = MultiByteToWideChar(CP_UTF8, 0, aPath.c_str(), static_cast<int>(aPath.length()),
                                     const_cast<wchar_t*>(aPath_w.c_str()),
-                                    aPath_w.size());
+                                    static_cast<int>(aPath_w.size()));
   aPath_w.resize(newSize);
   std::FILE* fp = NULL;
   _wfopen_s(&fp, aPath_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
