@@ -40,7 +40,8 @@ make
 * for windows
 
 ```bat
-# PowerShell, please install MSVC compiler and Git 
+# PowerShell, please install MSVC compiler and Git with environment variables configured
+# or in x86 or x64 Native Tools Command Prompt for VS 2019 
 git clone https://github.com/Presburger/qmc-decoder.git
 cd qmc-decoder
 git submodule update --init
