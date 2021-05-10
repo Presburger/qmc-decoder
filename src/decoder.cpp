@@ -61,7 +61,14 @@ static const std::regex ogg_regex{"\\.qmcogg$"};
 static const std::regex flac_regex{"\\.qmcflac$"};
 
 void sub_process(std::string dir) {
-  std::cout << "decode: " + dir << std::endl;
+  std::wstring wdir;
+  wdir.resize(("Decode:"+dir).size());
+  int newSize = MultiByteToWideChar(
+      CP_UTF8, 0, ("Decode:"+dir).c_str(), static_cast<int>(("Decode:"+dir).length()),
+      const_cast<wchar_t*>(wdir.c_str()), static_cast<int>(wdir.size()));
+  wdir.resize(newSize);
+  std::wcout.imbue(std::locale("chs"));
+  std::wcout << wdir << std::endl;//使用wstring解决中日韩文字乱码问题(输出语句为wcout)
   std::string outloc(dir);
 
   auto mp3_outloc = regex_replace(outloc, mp3_regex, ".mp3");
