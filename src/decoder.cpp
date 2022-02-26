@@ -125,19 +125,45 @@ static const std::regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac|qmcogg)$"};
 
 int main(int argc, char** argv) {
   // refactor so that the command accept the path to the song as argument.
-  if (argc != 2) {
-    printf("Usage: qmc-decoder /PATH/TO/SONG\n");
+  if (argc > 2) {
+    printf(
+        "Put the binary in the same directory as your qmc files then run it, "
+        "or use the CLI interface: qmc-decoder /PATH/TO/SONG\n");
     return 1;
   }
-  auto path = argv[1];
+  if (argc == 1) {
+    if ((fs::status(fs::path(".")).permissions() & fs::perms::owner_write) ==
+        fs::perms::none) {
+      std::cerr << "please check if you have the write permissions on this dir."
+                << std::endl;
+      return -1;
+    }
+    std::vector<std::string> qmc_paths;
 
-  if ((fs::status(fs::path(path)).permissions() & fs::perms::owner_read) ==
+    for (auto& p : fs::recursive_directory_iterator(fs::path("."))) {
+      auto file_path = p.path().string();
+
+      if ((fs::status(p).permissions() & fs::perms::owner_read) !=
+              fs::perms::none &&
+          fs::is_regular_file(p) && regex_match(file_path, qmc_regex)) {
+        qmc_paths.emplace_back(std::move(file_path));
+      }
+    };
+
+    std::for_each(qmc_paths.begin(), qmc_paths.end(), sub_process);
+
+    return 0;
+  }
+
+  auto qmc_path = argv[1];
+
+  if ((fs::status(fs::path(qmc_path)).permissions() & fs::perms::owner_read) ==
       fs::perms::none) {
     std::cerr << "please check if you have the write permissions on this dir."
               << std::endl;
     return -1;
   }
-  sub_process(path);
+  sub_process(qmc_path);
 
   return 0;
 }
