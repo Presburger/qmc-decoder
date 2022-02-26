@@ -33,7 +33,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: linux
-        path: ./build/decoder
+        path: ./build/qmc-decoder
   
   windows:
     name: Build on Windows
@@ -64,7 +64,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: windows_${{ matrix.arch }}
-        path: ./build/decoder.exe
+        path: ./build/qmc-decoder.exe
 
   macos:
     name: Build on MacOS
@@ -90,4 +90,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: macos
-        path: ./build/decoder
+        path: ./build/qmc-decoder
