@@ -55,6 +55,13 @@ nmake
 
 ## Convert
 
+Run the following command from terminal:
+```bash
+qmc-decoder /PATH/TO/SONG
+```
+
+Or:
+
 Put the execuatable file in your qmc file directory, then run the execuatable file.
 
 For mac user, double-click the decoder.command file, before you need to put the `decoder.command` and `decoder` files in the qmc music file directory.
@@ -64,7 +71,6 @@ For mac user, double-click the decoder.command file, before you need to put the 
 For windows user, just click the `decoder-win.exe` when you put the `decoder-win.exe` into your qmc file directory, it will convert all qmc file automatically.
 
 ![tW1w7D.gif](https://s1.ax1x.com/2020/06/08/tW1w7D.gif)
-
 
 * Todo
 

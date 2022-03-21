@@ -46,9 +46,9 @@ smartFilePtr openFile(const std::string& aPath, openMode aOpenMode) {
 #else
   std::wstring aPath_w;
   aPath_w.resize(aPath.size());
-  int newSize = MultiByteToWideChar(CP_UTF8, 0, aPath.c_str(), static_cast<int>(aPath.length()),
-                                    const_cast<wchar_t*>(aPath_w.c_str()),
-                                    static_cast<int>(aPath_w.size()));
+  int newSize = MultiByteToWideChar(
+      CP_UTF8, 0, aPath.c_str(), static_cast<int>(aPath.length()),
+      const_cast<wchar_t*>(aPath_w.c_str()), static_cast<int>(aPath_w.size()));
   aPath_w.resize(newSize);
   std::FILE* fp = NULL;
   _wfopen_s(&fp, aPath_w.c_str(), aOpenMode == openMode::read ? L"rb" : L"wb");
@@ -124,32 +124,46 @@ static const std::regex qmc_regex{"^.+\\.(qmc3|qmc0|qmcflac|qmcogg)$"};
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc > 1) {
-    std::cerr
-        << "put decoder binary file in your qmc file directory, then run it."
-        << std::endl;
-    return -1;
+  // refactor so that the command accept the path to the song as argument.
+  if (argc > 2) {
+    printf(
+        "Put the binary in the same directory as your qmc files then run it, "
+        "or use the CLI interface: qmc-decoder /PATH/TO/SONG\n");
+    return 1;
+  }
+  if (argc == 1) {
+    if ((fs::status(fs::path(".")).permissions() & fs::perms::owner_write) ==
+        fs::perms::none) {
+      std::cerr << "please check if you have the write permissions on this dir."
+                << std::endl;
+      return -1;
+    }
+    std::vector<std::string> qmc_paths;
+
+    for (auto& p : fs::recursive_directory_iterator(fs::path("."))) {
+      auto file_path = p.path().string();
+
+      if ((fs::status(p).permissions() & fs::perms::owner_read) !=
+              fs::perms::none &&
+          fs::is_regular_file(p) && regex_match(file_path, qmc_regex)) {
+        qmc_paths.emplace_back(std::move(file_path));
+      }
+    };
+
+    std::for_each(qmc_paths.begin(), qmc_paths.end(), sub_process);
+
+    return 0;
   }
 
-  if ((fs::status(fs::path(".")).permissions() & fs::perms::owner_write) ==
+  auto qmc_path = argv[1];
+
+  if ((fs::status(fs::path(qmc_path)).permissions() & fs::perms::owner_read) ==
       fs::perms::none) {
     std::cerr << "please check if you have the write permissions on this dir."
               << std::endl;
     return -1;
   }
-  std::vector<std::string> qmc_paths;
-
-  for (auto& p : fs::recursive_directory_iterator(fs::path("."))) {
-    auto file_path = p.path().string();
-
-    if ((fs::status(p).permissions() & fs::perms::owner_read) !=
-            fs::perms::none &&
-        fs::is_regular_file(p) && regex_match(file_path, qmc_regex)) {
-      qmc_paths.emplace_back(std::move(file_path));
-    }
-  };
-
-  std::for_each(qmc_paths.begin(), qmc_paths.end(), sub_process);
+  sub_process(qmc_path);
 
   return 0;
 }

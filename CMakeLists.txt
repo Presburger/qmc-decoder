@@ -16,5 +16,5 @@ endif()
 
 include_directories(3rdparty/filesystem/include)
 aux_source_directory(src SRC)
-add_executable(decoder ${SRC})
-
+add_executable(qmc-decoder ${SRC})
+install(TARGETS qmc-decoder DESTINATION bin)
