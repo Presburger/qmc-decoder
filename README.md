@@ -62,9 +62,9 @@ qmc-decoder /PATH/TO/SONG
 
 Or:
 
-Put the execuatable file in your qmc file directory, then run the execuatable file.
+Put the execuatable file in the directory that contains the qmc music files. Run the execuatable.
 
-For mac user, double-click the decoder.command file, before you need to put the `decoder.command` and `decoder` files in the qmc music file directory.
+For macOS users, put the `decoder.command` and `qmc-decoder` files in the directory that contains the qmc music files. Double-clike on the `decoder.command` file.
 
 ![EjHn9U.gif](https://s2.ax1x.com/2019/05/19/EjHn9U.gif)
 
